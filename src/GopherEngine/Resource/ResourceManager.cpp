@@ -3,10 +3,6 @@
 
 #include <SFML/Graphics/Image.hpp>
 
-#include <assimp/Importer.hpp>      // Mesh importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-
 #include <iostream>
 using namespace std;
 
