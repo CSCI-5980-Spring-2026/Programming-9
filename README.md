@@ -1,4 +1,4 @@
-# Programming 9: Resource Initialization and Cross-Referencing
+# Programming 9: Resource Registration and Cross-Referencing
 
 In this live programming class, we will integrate the [Open Asset Importer Library](https://www.assimp.org/) and add a resource registry for resolving cross-references.
 
