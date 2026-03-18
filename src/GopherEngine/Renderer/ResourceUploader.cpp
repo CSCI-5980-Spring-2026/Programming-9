@@ -25,14 +25,14 @@ namespace GopherEngine
          glNamedBufferData(
             upload.vbo_,
             static_cast<GLsizeiptr>(upload.mesh_->array_buffer_.size() * sizeof(float)),
-            upload.mesh_->array_buffer_.data(),
+            nullptr,
             GL_STATIC_DRAW
         );
 
         glNamedBufferData(
             upload.ebo_,
             static_cast<GLsizeiptr>(upload.mesh_->element_buffer_.size() * sizeof(unsigned int)),
-            upload.mesh_->element_buffer_.data(),
+            nullptr,
             GL_STATIC_DRAW
         );
 

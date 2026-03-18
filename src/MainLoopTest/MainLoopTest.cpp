@@ -98,6 +98,8 @@ void MainLoopTest::initialize() {
 		// Success callback (optional)
 		[cube_component](std::shared_ptr<Texture> texture) { 
 
+			cout << "Loaded texture: " << texture->name_ << " with GUID " << texture->guid_.to_string() << endl;
+
 			auto material = make_shared<BlinnPhongMaterial>();
 			material->set_ambient_color(glm::vec3(0.2f, 0.2f, 0.2f));
 			material->set_diffuse_color(glm::vec3(0.2f, 0.2f, 0.2f));
@@ -118,6 +120,8 @@ void MainLoopTest::initialize() {
 
 		// Success callback (optional)
 		[bunny_component](std::shared_ptr<Texture> texture) { 
+
+			cout << "Loaded texture: " << texture->name_ << " with GUID " << texture->guid_.to_string() << endl;
 
 			auto material = make_shared<BlinnPhongMaterial>();
 			material->set_ambient_color(glm::vec3(0.2f, 0.2f, 0.2f));
