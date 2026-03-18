@@ -87,9 +87,7 @@ void MainLoopTest::initialize() {
 
 	// Add a cube to the cube mesh component
 	cube_component->set_mesh(MeshFactory::create_cube());
-
-	// Add a cube to the bunny mesh compoment (placeholder)
-	bunny_component->set_mesh(MeshFactory::create_cube());
+	cout << "Created mesh: " << cube_component->get_mesh()->name_ << " with GUID " << cube_component->get_mesh()->guid_.to_string() << endl;
 
 	// Because the cube mesh was procedurally generated, we can assign the texture immediately
 	// after loading via a callback without worrying about load order or cross-referencing.
@@ -116,20 +114,31 @@ void MainLoopTest::initialize() {
 		
 	);
 
+
+	// Callbacks are a simple way to assign loaded single resources, but they don't
+	// scale well when you have multiple resources that cross-reference each other, 
+	// like a mesh that references a texture. For this reason, we don't assign the 
+	// bunny mesh or bark texture here.
+	ResourceManager::get().load_mesh("assets/bunny.obj",
+
+		// Success callback (optional)
+		[](std::shared_ptr<Mesh> mesh) { 
+			cout << "Loaded mesh: " << mesh->name_ << " with GUID " << mesh->guid_.to_string() << endl;
+		},
+
+		// Failure callback (optional)
+		[](const std::string& error) {
+			cout << error << endl;
+		}
+		
+	);
+
 	ResourceManager::get().load_texture("assets/Bark_007_BaseColor.jpg",
 
 		// Success callback (optional)
-		[bunny_component](std::shared_ptr<Texture> texture) { 
+		[](std::shared_ptr<Texture> texture) { 
 
 			cout << "Loaded texture: " << texture->name_ << " with GUID " << texture->guid_.to_string() << endl;
-
-			auto material = make_shared<BlinnPhongMaterial>();
-			material->set_ambient_color(glm::vec3(0.2f, 0.2f, 0.2f));
-			material->set_diffuse_color(glm::vec3(0.2f, 0.2f, 0.2f));
-			material->set_specular_color(glm::vec3(2.f, 2.f, 2.f));
-			material->set_shininess(64.f);
-			material->set_texture(texture);
-			bunny_component->set_material(material);
 		},
 
 		// Failure callback (optional)
@@ -153,6 +162,29 @@ void MainLoopTest::update(float delta_time) {
     cube_node_->transform().rotation_ =  frame_rotation * cube_node_->transform().rotation_;
 	bunny_node_->transform().rotation_ =  frame_rotation * bunny_node_->transform().rotation_;
 
+	// To resolve cross-referencing dependencies between resources, we need to wait until all
+	// pending loads have finished before we can assign the bunny mesh and bark texture.
+	// We can check for this in the update loop by polling the ResourceManager for completed loads.
+	// Then we can lookup the loaded resources by GUID and assign them to the component.
+	if(!resources_loaded_ && Service<ResourceManager>::get().poll()) {
+
+		cout << "All pending resources have finished loading." << endl;
+		resources_loaded_ = true;
+
+		auto bunny_components = bunny_node_->get_components<MeshComponent>();
+		if(!bunny_components.empty()) {
+			auto bunny_mesh = ResourceManager::get().get_mesh(Guid::from_string("37afc705-0af7-5e83-86c2-d44abdd7a6ef"));
+			bunny_components.front()->set_mesh(bunny_mesh);
+
+			auto bark_texture = ResourceManager::get().get_texture(Guid::from_string("da1dc501-22cb-56e7-8276-8b82e2f530ee"));
+			auto bark_material = make_shared<BlinnPhongMaterial>();
+			bark_material->set_ambient_color(glm::vec3(0.2f, 0.2f, 0.2f));
+			bark_material->set_diffuse_color(glm::vec3(0.2f, 0.2f, 0.2f));
+			bark_material->set_specular_color(glm::vec3(0.f, 0.f, 0.f));
+			bark_material->set_texture(bark_texture);
+			bunny_components.front()->set_material(bark_material);
+		}
+	}
 }
 
 int main()

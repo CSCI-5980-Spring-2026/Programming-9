@@ -1,5 +1,6 @@
 #include <GopherEngine/Resource/MeshFactory.hpp>
 #include <GopherEngine/Resource/ResourceManager.hpp>
+#include <GopherEngine/Core/Guid.hpp>
 
 #include <glm/glm.hpp>
 using namespace glm;
@@ -11,6 +12,19 @@ namespace GopherEngine {
 
     std::shared_ptr<Mesh> MeshFactory::create_cube(float width, float height, float depth)
     {
+        // The name and GUID of a procedurally generated mesh are derived entirely 
+        // from its parameters and the type of mesh, so that identical meshes will
+        // have the same GUID regardless of when or where they are generated. 
+        string name = make_generated_mesh_name(
+            "cube",
+            {
+                {"w", width},
+                {"h", height},
+                {"d", depth}
+            }
+        );
+        Guid guid = Guid::from_name(name);
+
         const float w = width  / 2.f;
         const float h = height / 2.f;
         const float d = depth  / 2.f;
@@ -78,8 +92,10 @@ namespace GopherEngine {
         auto mesh = std::make_shared<Mesh>();
         mesh->array_buffer_ = interleave_vertex_data(vertices, normals, {}, uvs);
         mesh->element_buffer_ = indices;
+        mesh->name_ = name;
+        mesh->guid_ = guid;
 
-        return mesh;
+        return Service<ResourceManager>::get().register_mesh(mesh);;
     }
 
     vector<float> MeshFactory::interleave_vertex_data(const vector<vec3>& vertices, const vector<vec3>& normals, const vector<vec4>& colors, const vector<vec2>& uvs)
@@ -168,4 +184,5 @@ namespace GopherEngine {
 
         return oss.str();
     }
+
 }
