@@ -56,9 +56,6 @@ namespace GopherEngine
             texture->name_ = file_data.path_.string();
             texture->guid_ = guid;
 
-            // Add the loaded texture to the registry so it can be retrieved by GUID later
-            texture_registry_[texture->guid_] = texture;
-
             // Copy pixel data from the SFML image into our Texture structure. 
             texture->format_ = Texture::Format::RGBA;
             texture->width_ = image.getSize().x;
@@ -68,6 +65,10 @@ namespace GopherEngine
                 image.getPixelsPtr() + texture->width_ * texture->height_ * 4
             );
 
+            // Register the loaded texture in the registry
+            texture = register_texture(texture);
+
+            // Invoke the success callback with the loaded texture
             if(on_success)
                 on_success(texture);
         });
@@ -133,9 +134,6 @@ namespace GopherEngine
             mesh->name_ = file_data.path_.string();
             mesh->guid_ = guid;
 
-            // Add the loaded mesh to the registry so it can be retrieved by GUID later
-            mesh_registry_[mesh->guid_] = mesh;
-
             // For demonstration purposes, we only load the first mesh in the file. 
             auto ai_mesh = scene->mMeshes[0];
 
@@ -198,6 +196,9 @@ namespace GopherEngine
                 mesh->element_buffer_.push_back(ai_mesh->mFaces[f].mIndices[1]);
                 mesh->element_buffer_.push_back(ai_mesh->mFaces[f].mIndices[2]);
             }
+
+            // Register the loaded mesh in the registry
+            mesh = register_mesh(mesh);
             
             if(on_success)
                 on_success(mesh);
