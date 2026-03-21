@@ -4,7 +4,6 @@
 #include <GopherEngine/Core/FileLoader.hpp>
 #include <GopherEngine/Resource/Texture.hpp>
 #include <GopherEngine/Resource/Mesh.hpp>
-#include <GopherEngine/Core/Guid.hpp>
 
 #include <vector>
 #include <memory>
@@ -28,14 +27,17 @@ namespace GopherEngine
 
             bool poll();
 
-            std::shared_ptr<Texture> get_texture(const Guid& guid) const;
             std::shared_ptr<Mesh> get_mesh(const Guid& guid) const;
+            std::shared_ptr<Texture> get_texture(const Guid& guid) const;
 
-            bool has_texture(const Guid& guid) const;
             bool has_mesh(const Guid& guid) const;
+            bool has_texture(const Guid& guid) const;
 
-            std::shared_ptr<Texture> register_texture(const std::shared_ptr<Texture>& texture);
             std::shared_ptr<Mesh> register_mesh(const std::shared_ptr<Mesh>& mesh);
+            std::shared_ptr<Texture> register_texture(const std::shared_ptr<Texture>& texture);
+
+            bool remove_mesh(const Guid& guid);
+            bool remove_texture(const Guid& guid);
 
             void remove_all_meshes();
             void remove_all_textures();
@@ -43,7 +45,7 @@ namespace GopherEngine
 
         private:
             std::vector<LoadHandle> load_handles_;
-            std::unordered_map<Guid, std::shared_ptr<Texture>, GuidHasher> texture_registry_;
             std::unordered_map<Guid, std::shared_ptr<Mesh>, GuidHasher> mesh_registry_;
+            std::unordered_map<Guid, std::shared_ptr<Texture>, GuidHasher> texture_registry_;
     };
 }

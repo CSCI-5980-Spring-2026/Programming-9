@@ -119,6 +119,7 @@ void MainLoopTest::initialize() {
 	// scale well when you have multiple resources that cross-reference each other, 
 	// like a mesh that references a texture. For this reason, we don't assign the 
 	// bunny mesh or bark texture here.
+
 	ResourceManager::get().load_mesh("assets/bunny.obj",
 
 		// Success callback (optional)
@@ -137,7 +138,6 @@ void MainLoopTest::initialize() {
 
 		// Success callback (optional)
 		[](std::shared_ptr<Texture> texture) { 
-
 			cout << "Loaded texture: " << texture->name_ << " with GUID " << texture->guid_.to_string() << endl;
 		},
 
@@ -162,12 +162,13 @@ void MainLoopTest::update(float delta_time) {
     cube_node_->transform().rotation_ =  frame_rotation * cube_node_->transform().rotation_;
 	bunny_node_->transform().rotation_ =  frame_rotation * bunny_node_->transform().rotation_;
 
+
 	// To resolve cross-referencing dependencies between resources, we need to wait until all
 	// pending loads have finished before we can assign the bunny mesh and bark texture.
 	// We can check for this in the update loop by polling the ResourceManager for completed loads.
 	// Then we can lookup the loaded resources by GUID and assign them to the component.
 	if(!resources_loaded_ && Service<ResourceManager>::get().poll()) {
-
+		
 		cout << "All pending resources have finished loading." << endl;
 		resources_loaded_ = true;
 
@@ -184,7 +185,7 @@ void MainLoopTest::update(float delta_time) {
 			bark_material->set_texture(bark_texture);
 			bunny_components.front()->set_material(bark_material);
 		}
-	}
+	}	
 }
 
 int main()

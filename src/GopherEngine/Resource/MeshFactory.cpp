@@ -1,6 +1,5 @@
 #include <GopherEngine/Resource/MeshFactory.hpp>
 #include <GopherEngine/Resource/ResourceManager.hpp>
-#include <GopherEngine/Core/Guid.hpp>
 
 #include <glm/glm.hpp>
 using namespace glm;
@@ -23,7 +22,13 @@ namespace GopherEngine {
                 {"d", depth}
             }
         );
-        Guid guid = Guid::from_name(name);
+       Guid guid = Guid::from_name(name);
+
+       // If an identical cube mesh was already generated before, return the cached 
+       // resource from the registry.
+       if(Service<ResourceManager>::get().has_mesh(guid)) {
+            return Service<ResourceManager>::get().get_mesh(guid);
+       }
 
         const float w = width  / 2.f;
         const float h = height / 2.f;
@@ -94,8 +99,9 @@ namespace GopherEngine {
         mesh->element_buffer_ = indices;
         mesh->name_ = name;
         mesh->guid_ = guid;
-
-        return Service<ResourceManager>::get().register_mesh(mesh);;
+       
+        // Register the generated mesh in the resource manager registry.
+        return Service<ResourceManager>::get().register_mesh(mesh);
     }
 
     vector<float> MeshFactory::interleave_vertex_data(const vector<vec3>& vertices, const vector<vec3>& normals, const vector<vec4>& colors, const vector<vec2>& uvs)
@@ -184,5 +190,4 @@ namespace GopherEngine {
 
         return oss.str();
     }
-
 }

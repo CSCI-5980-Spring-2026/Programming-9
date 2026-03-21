@@ -31,7 +31,7 @@ namespace GopherEngine
                 on_success(get_texture(guid));
             return;
         }
-        
+
         LoadHandle handle = FileLoader::load_file_async(path);
 
         handle.on_complete([this, guid, on_success = std::move(on_success), on_error = std::move(on_error)](const FileData& file_data)
@@ -116,11 +116,13 @@ namespace GopherEngine
                 file_data.bytes_.data(),
                 file_data.bytes_.size(),
                 aiProcess_Triangulate,
-                "obj");
+                file_data.path_.extension().string().c_str()
+            );
 
-            if(!scene || scene->mNumMeshes == 0) {
+            if(!scene || scene->mNumMeshes <= 0)
+            {
                 if(on_error) 
-                    on_error("Failed to decode mesh: " + file_data.path_.string());
+                     on_error("Failed to decode mesh: " + file_data.path_.string() + " - " + importer.GetErrorString());
                 return;
             }
 
@@ -196,7 +198,7 @@ namespace GopherEngine
                 mesh->element_buffer_.push_back(ai_mesh->mFaces[f].mIndices[1]);
                 mesh->element_buffer_.push_back(ai_mesh->mFaces[f].mIndices[2]);
             }
-
+            
             if(on_success)
                 on_success(mesh);
         });
@@ -223,14 +225,6 @@ namespace GopherEngine
         return load_handles_.empty();
     }
 
-    std::shared_ptr<Texture> ResourceManager::get_texture(const Guid& guid) const
-    {
-        auto it = texture_registry_.find(guid);
-        if (it != texture_registry_.end())
-            return it->second;
-        return nullptr;
-    }
-
     std::shared_ptr<Mesh> ResourceManager::get_mesh(const Guid& guid) const
     {
         auto it = mesh_registry_.find(guid);
@@ -239,9 +233,12 @@ namespace GopherEngine
         return nullptr;
     }
 
-    bool ResourceManager::has_texture(const Guid& guid) const
+    std::shared_ptr<Texture> ResourceManager::get_texture(const Guid& guid) const
     {
-        return texture_registry_.find(guid) != texture_registry_.end();
+        auto it = texture_registry_.find(guid);
+        if (it != texture_registry_.end())
+            return it->second;
+        return nullptr;
     }
 
     bool ResourceManager::has_mesh(const Guid& guid) const
@@ -249,23 +246,14 @@ namespace GopherEngine
         return mesh_registry_.find(guid) != mesh_registry_.end();
     }
 
-    std::shared_ptr<Texture> ResourceManager::register_texture(const std::shared_ptr<Texture>& texture)
+    bool ResourceManager::has_texture(const Guid& guid) const
     {
-        if(!texture)
-            return nullptr;
-            
-        auto it = texture_registry_.find(texture->guid_);
-        if (it != texture_registry_.end())
-            return it->second;
-
-        
-        texture_registry_[texture->guid_] = texture;
-        return texture;
+        return texture_registry_.find(guid) != texture_registry_.end();
     }
 
     std::shared_ptr<Mesh> ResourceManager::register_mesh(const std::shared_ptr<Mesh>& mesh)
     {
-        if(!mesh)
+        if (!mesh)
             return nullptr;
 
         auto it = mesh_registry_.find(mesh->guid_);
@@ -274,6 +262,29 @@ namespace GopherEngine
 
         mesh_registry_[mesh->guid_] = mesh;
         return mesh;
+    }
+
+    std::shared_ptr<Texture> ResourceManager::register_texture(const std::shared_ptr<Texture>& texture)
+    {
+        if (!texture)
+            return nullptr;
+
+        auto it = texture_registry_.find(texture->guid_);
+        if (it != texture_registry_.end())
+            return it->second;
+
+        texture_registry_[texture->guid_] = texture;
+        return texture;
+    }
+
+    bool ResourceManager::remove_mesh(const Guid& guid)
+    {
+        return mesh_registry_.erase(guid) > 0;
+    }
+
+    bool ResourceManager::remove_texture(const Guid& guid)
+    {
+        return texture_registry_.erase(guid) > 0;
     }
 
     void ResourceManager::remove_all_meshes()
@@ -288,8 +299,7 @@ namespace GopherEngine
 
     void ResourceManager::remove_all()
     {
-        remove_all_meshes();
-        remove_all_textures();
+        mesh_registry_.clear();
+        texture_registry_.clear();
     }
-
 }
